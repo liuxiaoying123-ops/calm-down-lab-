@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>90斤少女·涅槃实验室 | 终极版</title>
+    <style>
+        :root {
+            --mint: #e0f2f1;
+            --lavender: #f3e5f5;
+            --deep-mint: #80cbc4;
+            --danger-red: #ff5252;
+            --text-main: #455a64;
+            --glass: rgba(255, 255, 255, 0.7);
+        }
+
+        body {
+            margin: 0;
+            background: linear-gradient(135deg, var(--mint), var(--lavender));
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        #app-container {
+            width: 95%;
+            max-width: 500px;
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            border-radius: 30px;
+            padding: 25px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.08);
+            border: 1px solid rgba(255,255,255,0.4);
+            text-align: center;
+        }
+
+        .step { display: none; }
+        .active { display: block; animation: slideIn 0.5s ease-out; }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+
+        h1 { font-weight: 300; letter-spacing: 2px; color: #37474f; margin-bottom: 10px; }
+        .sub-title { font-size: 0.9rem; color: #78909c; margin-bottom: 25px; }
+
+        /* 惩罚样式 */
+        .cost-box { background: #fff; padding: 15px; border-radius: 15px; margin: 15px 0; border-left: 5px solid var(--danger-red); text-align: left; }
+        .red-bold { color: var(--danger-red); font-weight: bold; font-size: 1.2rem; }
+
+        /* 按钮样式 */
+        button {
+            background: var(--deep-mint);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 1rem;
+            margin: 10px 5px;
+        }
+        button:hover { opacity: 0.8; transform: scale(1.02); }
+        button:disabled { background: #cfd8dc; cursor: not-allowed; }
+        .btn-outline { background: none; border: 1px solid var(--deep-mint); color: var(--deep-mint); }
+
+        /* 输入框样式 */
+        .quote-input {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-sizing: border-box;
+            background: rgba(255,255,255,0.5);
+        }
+
+        /* 图片上传预览区 */
+        #upload-box {
+            width: 100%;
+            height: 150px;
+            border: 2px dashed var(--deep-mint);
+            border-radius: 15px;
+            margin: 15px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            overflow: hidden;
+            background: rgba(255,255,255,0.3);
+        }
+        #upload-box img { width: 100%; height: 100%; object-fit: cover; }
+        #file-input { display: none; }
+
+        /* 游戏/任务区 */
+        .task-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .task-card { background: white; padding: 15px; border-radius: 15px; cursor: pointer; font-size: 0.9rem; transition: 0.3s; }
+        .task-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        
+        #game-box { height: 220px; background: white; border-radius: 15px; position: relative; overflow: hidden; margin: 10px 0; border: 1px solid #eee; }
+        
+        /* 气泡样式优化 */
+        .bubble { 
+            position: absolute; 
+            width: 90px; 
+            height: 90px; 
+            background: var(--danger-red); 
+            border-radius: 50%; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            color: white; 
+            font-size: 0.8rem; 
+            font-weight: bold;
+            padding: 10px;
+            text-align: center;
+            line-height: 1.2;
+            box-shadow: 0 4px 10px rgba(255, 82, 82, 0.3);
+            animation: pulse 1s infinite alternate;
+        }
+
+        @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.05); } }
+
+        /* 抄写区 */
+        #typing-area { width: 100%; height: 100px; border-radius: 10px; border: 1px solid #ccc; padding: 10px; margin-top: 10px; box-sizing: border-box; }
+        
+        /* 愿景墙浮窗 */
+        #vision-reminder { margin-top: 15px; display: none; padding: 10px; background: #fff; border-radius: 15px; font-size: 0.8rem; border: 1px solid var(--mint); text-align: left; }
+    </style>
+</head>
+<body>
+
+<div id="app-container">
+    
+    <!-- STEP 1: 代价计算 -->
+    <div id="step1" class="step active">
+        <h1>欲望的账单</h1>
+        <p class="sub-title">120斤到90斤，这顿饭会让你白费半个月。</p>
+        <div style="text-align: left; font-size: 0.9rem;">选择你想吃的东西：</div>
+        <div class="task-grid" style="margin-top:10px;">
+            <button class="btn-outline" onclick="addCost(550, 8)">🧋 芝士奶茶</button>
+            <button class="btn-outline" onclick="addCost(600, 9)">🍟 炸鸡薯条</button>
+            <button class="btn-outline" onclick="addCost(400, 6)">🍰 奶油蛋糕</button>
+            <button class="btn-outline" onclick="addCost(800, 12)">🍲 麻辣火锅</button>
+        </div>
+        <div class="cost-box">
+            预计摄入：<span class="red-bold" id="cal-display">0</span> 大卡<br>
+            你需要慢跑：<span class="red-bold" id="run-display">0</span> 公里才能抵消
+        </div>
+        <button onclick="goStep(2)" style="width:100%">我接受代价，继续</button>
+    </div>
+
+    <!-- STEP 2: 身份羞辱 (毒舌补充版) -->
+    <div id="step2" class="step">
+        <h1>直视那个软弱的自己</h1>
+        <div style="text-align: left; background: white; padding: 20px; border-radius: 15px; line-height: 1.6; font-size: 0.95rem;">
+            <p>🔴 <b>对比伤害：</b> 你羡慕的那些TA们都那么瘦！人家都能控制住自己的食欲，凭什么你不行？</p>
+            <p>🔴 <b>灵魂拷问：</b> 难道你这辈子都不想拍好看的照片了吗？想一辈子活在修图软件里吗？</p>
+            <p>🔴 <b>身份真相：</b> 120斤的你还要继续在这乞求食物吗？90斤的仙女正在未来嘲笑你的贪婪。</p>
+            <p class="red-bold" style="text-align: center;">“除了吃，你的人生就没别的追求了吗？”</p>
+        </div>
+        <button onclick="goStep(3)" style="width:100%; background:var(--danger-red)">我不配变瘦，我要继续堕落</button>
+        <button class="btn-outline" onclick="goStep(3)" style="width:100%">我想变好，去武装自己</button>
+    </div>
+
+    <!-- STEP 3: 自定义语录和图片 -->
+    <div id="step3" class="step">
+        <h1>动力武装</h1>
+        <p class="sub-title">请填写5句刺痛或激励你的语录，并上传变美目标图</p>
+        
+        <div id="quote-inputs">
+            <input type="text" class="quote-input" placeholder="语录 1：例如：羡慕的TA们都那么瘦，你呢？">
+            <input type="text" class="quote-input" placeholder="语录 2：例如：人家能控制食欲，我也可以！">
+            <input type="text" class="quote-input" placeholder="语录 3：例如：为了拍好看照片，这顿不吃！">
+            <input type="text" class="quote-input" placeholder="语录 4：例如：90斤的空气都是甜的">
+            <input type="text" class="quote-input" placeholder="语录 5：例如：你可以忍受饥饿，但不能忍受丑">
+        </div>
+
+        <div id="upload-box" onclick="document.getElementById('file-input').click()">
+            <span id="upload-hint">点击上传你的目标身材/裙子照片</span>
+            <img id="preview-img" src="" style="display:none">
+        </div>
+        <input type="file" id="file-input" accept="image/*" onchange="previewImage(this)">
+
+        <button onclick="validateMotivation()" style="width:100%">装填完毕，进入洗礼</button>
+    </div>
+
+    <!-- STEP 4: 强制抄写 -->
+    <div id="step4" class="step">
+        <h1>理智生死锁</h1>
+        <p class="sub-title">必须准确无误抄写以下文字，否则不准进食。</p>
+        <div id="target-text" style="background:#fff; padding:15px; border-radius:10px; font-size:0.9rem; text-align:left; border:1px solid var(--danger-red);">
+            我现在的饥饿是廉价的错觉。120斤的我没有资格谈论享受，只有90斤的我才有资格拥有自由。我要打碎多巴胺的奴役，把这一刻的痛苦变成变美的燃料。我绝不向这一盘油脂低头。
+        </div>
+        <textarea id="typing-area" oninput="checkTyping()" placeholder="请在此精准输入上方文字..."></textarea>
+        <p id="type-hint" style="font-size:0.8rem; color:var(--danger-red)"></p>
+        <button id="type-btn" disabled onclick="goStep(5)" style="width:100%">输入完成，灵魂已清醒</button>
+    </div>
+
+    <!-- STEP 5: 避风港任务 -->
+    <div id="step5" class="step">
+        <h1>15分钟避风港</h1>
+        <div id="vision-reminder">
+            <img id="final-preview" src="" style="width:60px; height:60px; float:left; margin-right:10px; border-radius:5px; object-fit:cover;">
+            <p id="random-quote-display" style="font-weight:bold; color:var(--danger-red)"></p>
+            <div style="clear:both"></div>
+        </div>
+
+        <p class="sub-title">选一个任务，彻底杀掉食欲：</p>
+        <div class="task-grid">
+            <div class="task-card" onclick="startMiniGame()">🎮 <span>消灭欲望</span></div>
+            <div class="task-card" onclick="alert('奖励努力克制欲望的自己，去挑一件想买很久的单品吧！')">🛍️ <span>奖励自己</span></div>
+            <div class="task-card" onclick="alert('去镜子前，练习画出90斤的下颌线！')">💄 <span>练习美妆</span></div>
+            <div class="task-card" onclick="alert('调大音乐！把屋子收拾到一尘不染！')">🧹 <span>整理房间</span></div>
+            <div class="task-card" style="grid-column: span 2;" onclick="alert('大声唱完三首你最喜欢的歌！')">🎤 <span>练习唱歌</span></div>
+        </div>
+        
+        <div id="game-container" style="display:none; margin-top:20px;">
+            <h3 style="font-size:0.9rem;">第 <span id="round-num">1</span>/5 局</h3>
+            <div id="game-box"></div>
+        </div>
+
+        <button class="btn-outline" onclick="location.reload()" style="margin-top:20px;">我已经彻底冷静了</button>
+    </div>
+
+</div>
+
+<script>
+    let totalCal = 0;
+    let totalRun = 0;
+    let userQuotes = [];
+    let userImgSrc = "";
+
+    function addCost(cal, run) {
+        totalCal += cal;
+        totalRun += run;
+        document.getElementById('cal-display').innerText = totalCal;
+        document.getElementById('run-display').innerText = totalRun;
+    }
+
+    function goStep(n) {
+        document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+        document.getElementById('step' + n).classList.add('active');
+        if(n === 5) showVision();
+    }
+
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            let reader = new FileReader();
+            reader.onload = function(e) {
+                userImgSrc = e.target.result;
+                document.getElementById('preview-img').src = e.target.result;
+                document.getElementById('preview-img').style.display = 'block';
+                document.getElementById('upload-hint').style.display = 'none';
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function validateMotivation() {
+        const inputs = document.querySelectorAll('.quote-input');
+        userQuotes = Array.from(inputs).map(i => i.value.trim()).filter(v => v !== "");
+        if (userQuotes.length < 5) { alert("请写满5句激励语录！"); return; }
+        if (!userImgSrc) { alert("请上传一张目标照片！"); return; }
+        goStep(4);
+    }
+
+    function showVision() {
+        const container = document.getElementById('vision-reminder');
+        container.style.display = 'block';
+        document.getElementById('final-preview').src = userImgSrc;
+        const randomQ = userQuotes[Math.floor(Math.random() * userQuotes.length)];
+        document.getElementById('random-quote-display').innerText = "“" + randomQ + "”";
+    }
+
+    function checkTyping() {
+        const target = document.getElementById('target-text').innerText.trim();
+        const input = document.getElementById('typing-area').value.trim();
+        const btn = document.getElementById('type-btn');
+        const hint = document.getElementById('type-hint');
+        if (input === target) {
+            btn.disabled = false;
+            hint.innerText = "校验通过。";
+        } else {
+            btn.disabled = true;
+            hint.innerText = input.length > 0 && !target.startsWith(input) ? "❌ 输入有误" : "";
+        }
+    }
+
+    let round = 1;
+    function startMiniGame() {
+        document.getElementById('game-container').style.display = 'block';
+        initRound();
+    }
+
+    function initRound() {
+        const box = document.getElementById('game-box');
+        box.innerHTML = '';
+        let count = 0;
+        let goal = 5 + round;
+
+        function createBubble() {
+            if (count >= goal) {
+                if (round < 5) {
+                    round++;
+                    document.getElementById('round-num').innerText = round;
+                    initRound();
+                } else {
+                    alert("✅ 5局挑战完成！理智已战胜欲望！");
+                    location.reload();
+                }
+                return;
+            }
+            const b = document.createElement('div');
+            b.className = 'bubble';
+            b.innerText = "大馋猪给我滚！";
+            b.style.left = Math.random() * 70 + 5 + '%';
+            b.style.top = Math.random() * 70 + 5 + '%';
+            b.onclick = () => {
+                box.removeChild(b);
+                count++;
+                createBubble();
+            };
+            box.appendChild(b);
+        }
+        createBubble();
+    }
+</script>
+
+</body>
+</html>
